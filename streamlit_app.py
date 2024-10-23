@@ -28,7 +28,7 @@ def plot_trendline(data, x_col, y_col):
     fig.add_scatter(x=x, y=y, mode='markers', name='Data Points', marker=dict(color='blue'))
     
     # Update x-axis to show dates properly
-    fig.update_layout(xaxis=dict(tickformat='%Y-%m'), xaxis_title=x_col)
+    fig.update_layout(xaxis_title='Date')
     
     st.plotly_chart(fig)
 
@@ -38,7 +38,7 @@ def visualize_cash_runway(df):
     
     # Create a new DataFrame for the runway visualization
     runway_data = pd.DataFrame({
-        'Date': pd.to_datetime(df['Date']),
+        'Date': pd.to_datetime(df['Date']),  # Retain full datetime format
         'Cash Runway (Months)': df['Cash Runway (Months)']
     })
     
@@ -59,6 +59,7 @@ def display_assumptions(df):
     if assumptions_columns:
         # Create a new DataFrame to show assumptions alongside the corresponding dates
         assumptions_data = df[['Date'] + assumptions_columns]
+        assumptions_data['Date'] = pd.to_datetime(assumptions_data['Date'])  # Retain full datetime format
         assumptions_data.set_index('Date', inplace=True)
         
         # Display the assumptions DataFrame
@@ -69,6 +70,9 @@ def display_assumptions(df):
 # Streamlit app layout
 st.title("ACCNTNT's Cash Forecast Tool")  # Updated title
 
+# Add your logo
+st.image("/mnt/data/Accntnt-logo-website.jpg", width=200)  # Adjust width as needed
+
 # File uploader
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
@@ -76,7 +80,10 @@ if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
 
-    # Display the dataframe
+    # Display assumptions first
+    display_assumptions(df)
+
+    # Display the dataframe preview
     st.write("Data Preview:")
     st.dataframe(df)
 
@@ -98,9 +105,6 @@ if uploaded_file is not None:
 
         # Visualize cash runway
         visualize_cash_runway(df)
-
-        # Display assumptions
-        display_assumptions(df)
 
         st.success("Cash flow forecast successfully generated!")
     else:
