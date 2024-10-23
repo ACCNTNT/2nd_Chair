@@ -28,7 +28,7 @@ def plot_trendline(data, x_col, y_col):
     fig.add_scatter(x=x, y=y, mode='markers', name='Data Points', marker=dict(color='blue'))
     
     # Update x-axis to show dates properly
-    fig.update_layout(xaxis=dict(tickformat='%Y-%m'), xaxis_title=x_col)
+    fig.update_layout(xaxis_title='Date')
     
     st.plotly_chart(fig)
 
@@ -41,13 +41,19 @@ def visualize_cash_runway(df):
         'Date': pd.to_datetime(df['Date']),
         'Cash Runway (Months)': df['Cash Runway (Months)']
     })
-    
+
+    # Use the date from the second row for display
+    display_date = runway_data['Date'].iloc[1] if len(runway_data) > 1 else runway_data['Date'].iloc[0]
+
     # Create bar chart
     fig = px.bar(runway_data, x='Date', y='Cash Runway (Months)',
                  labels={'Date': 'Date', 'Cash Runway (Months)': 'Months of Cash Runway'},
                  title='Cash Runway Over Time')
     
     st.plotly_chart(fig)
+
+    # Display the date from row 2 (if available)
+    st.write(f"Cash Runway as of {display_date.strftime('%b-%d, %Y')}:")
 
 # Function to compile and display assumptions
 def display_assumptions(df):
@@ -67,7 +73,10 @@ def display_assumptions(df):
         st.write("No assumptions found in the uploaded file.")
 
 # Streamlit app layout
-st.title("ACCNTNT's Cash Forecast Visualization")  # Updated title
+st.title("ACCNTNT's Cash Forecast Visualization Tool")  # Updated title
+
+# Add your logo
+st.image("/mnt/data/Accntnt-logo-website.jpg", width=200)  # Adjust width as needed
 
 # File uploader
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -86,7 +95,10 @@ if uploaded_file is not None:
         # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'])
 
-        # Display assumptions first
+        # Visualize cash runway
+        visualize_cash_runway(df)
+
+        # Display assumptions
         display_assumptions(df)
 
         # Plot trendline for Closing Balance
@@ -98,9 +110,6 @@ if uploaded_file is not None:
         # Display cash runway
         st.subheader("Cash Runway")
         st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
-
-        # Visualize cash runway
-        visualize_cash_runway(df)
 
         st.success("Cash flow forecast successfully generated!")
     else:
