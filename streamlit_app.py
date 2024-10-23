@@ -28,7 +28,7 @@ def plot_trendline(data, x_col, y_col):
     fig.add_scatter(x=x, y=y, mode='markers', name='Data Points', marker=dict(color='blue'))
     
     # Update x-axis to show dates properly
-    fig.update_layout(xaxis=dict(tickformat='%Y-%m'), xaxis_title=x_col)
+    fig.update_layout(xaxis_title='Date')
     
     st.plotly_chart(fig)
 
