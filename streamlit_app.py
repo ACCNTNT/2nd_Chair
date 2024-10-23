@@ -68,7 +68,6 @@ def display_assumptions(df):
 
 # Streamlit app layout
 st.title("ACCNTNT's Cash Forecast Visualization Tool")  # Updated title
-st.markdown("<h1 style='text-align: center;'>ACCNTNT's Cash Forecast Visualization Tool</h1>", unsafe_allow_html=True)  # Centered title
 
 # File uploader
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -77,10 +76,32 @@ if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
 
-    # Retrieve cash runway in months from the file
-    cash_runway_months = df['Cash Runway (Months)'].iloc[0]
+    # Visualize cash runway first
+    visualize_cash_runway(df)
 
-    # Display cash runway
-    st.subheader("Cash Runway")
-    display_date = pd.to_datetime(df['Date'].iloc[1]) if len(df['Date']) > 1 else pd.to_datetime(df['Date'].iloc[0])
-    st.write(f"Number 
+    # Display assumptions
+    display_assumptions(df)
+
+    # Plot trendline for Closing Balance
+    plot_trendline(df, 'Date', 'Closing Balance')
+
+    # Display the dataframe preview
+    st.write("Data Preview:")
+    st.dataframe(df)
+
+    # Check for necessary columns
+    required_columns = ['Date', 'Closing Balance', 'Opening Balance', 'Monthly Cash Burn Rate', 'Cash Runway (Months)', 'Assumptions']
+    if all(col in df.columns for col in required_columns):
+        # Convert Date to datetime
+        df['Date'] = pd.to_datetime(df['Date'])
+
+        # Retrieve cash runway in months from the file
+        cash_runway_months = df['Cash Runway (Months)'].iloc[0]
+
+        # Display cash runway
+        st.subheader("Cash Runway")
+        st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
+
+        st.success("Cash flow forecast successfully generated!")
+    else:
+        st.error(f"CSV file must contain the following columns: {', '.join(required_columns)}.")
