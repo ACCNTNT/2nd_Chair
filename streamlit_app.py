@@ -38,22 +38,16 @@ def visualize_cash_runway(df):
     
     # Create a new DataFrame for the runway visualization
     runway_data = pd.DataFrame({
-        'Date': pd.to_datetime(df['Date']),
+        'Date': pd.to_datetime(df['Date']),  # Retain full datetime format
         'Cash Runway (Months)': df['Cash Runway (Months)']
     })
-
-    # Use the date from the second row for display
-    display_date = runway_data['Date'].iloc[1] if len(runway_data) > 1 else runway_data['Date'].iloc[0]
-
+    
     # Create bar chart
     fig = px.bar(runway_data, x='Date', y='Cash Runway (Months)',
                  labels={'Date': 'Date', 'Cash Runway (Months)': 'Months of Cash Runway'},
                  title='Cash Runway Over Time')
     
     st.plotly_chart(fig)
-
-    # Display the date from row 2 (if available)
-    st.write(f"Cash Runway as of {display_date.strftime('%b-%d, %Y')}:")
 
 # Function to compile and display assumptions
 def display_assumptions(df):
@@ -65,6 +59,7 @@ def display_assumptions(df):
     if assumptions_columns:
         # Create a new DataFrame to show assumptions alongside the corresponding dates
         assumptions_data = df[['Date'] + assumptions_columns]
+        assumptions_data['Date'] = pd.to_datetime(assumptions_data['Date'])  # Retain full datetime format
         assumptions_data.set_index('Date', inplace=True)
         
         # Display the assumptions DataFrame
@@ -85,6 +80,12 @@ if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
 
+    # Visualize cash runway
+    visualize_cash_runway(df)
+
+    # Display assumptions
+    display_assumptions(df)
+
     # Display the dataframe preview
     st.write("Data Preview:")
     st.dataframe(df)
@@ -94,12 +95,6 @@ if uploaded_file is not None:
     if all(col in df.columns for col in required_columns):
         # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'])
-
-        # Visualize cash runway
-        visualize_cash_runway(df)
-
-        # Display assumptions
-        display_assumptions(df)
 
         # Plot trendline for Closing Balance
         plot_trendline(df, 'Date', 'Closing Balance')
