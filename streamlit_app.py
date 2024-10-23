@@ -32,8 +32,42 @@ def plot_trendline(data, x_col, y_col):
     
     st.plotly_chart(fig)
 
+# Function to visualize cash runway
+def visualize_cash_runway(df):
+    st.subheader("Cash Runway Visualization")
+    
+    # Create a new DataFrame for the runway visualization
+    runway_data = pd.DataFrame({
+        'Date': pd.to_datetime(df['Date']),
+        'Cash Runway (Months)': df['Cash Runway (Months)']
+    })
+    
+    # Create bar chart
+    fig = px.bar(runway_data, x='Date', y='Cash Runway (Months)',
+                 labels={'Date': 'Date', 'Cash Runway (Months)': 'Months of Cash Runway'},
+                 title='Cash Runway Over Time')
+    
+    st.plotly_chart(fig)
+
+# Function to compile and display assumptions
+def display_assumptions(df):
+    st.subheader("Assumptions")
+
+    # Identify columns that contain 'Assumptions' or 'Assumption by Month'
+    assumptions_columns = [col for col in df.columns if 'Assumptions' in col or 'Assumption' in col]
+
+    if assumptions_columns:
+        # Create a new DataFrame to show assumptions alongside the corresponding dates
+        assumptions_data = df[['Date'] + assumptions_columns]
+        assumptions_data.set_index('Date', inplace=True)
+        
+        # Display the assumptions DataFrame
+        st.write(assumptions_data)
+    else:
+        st.write("No assumptions found in the uploaded file.")
+
 # Streamlit app layout
-st.title('Cash Flow Forecasting App')
+st.title("ACCNTNT's Cash Forecast Tool")  # Updated title
 
 # File uploader
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -47,14 +81,28 @@ if uploaded_file is not None:
     st.dataframe(df)
 
     # Check for necessary columns
-    required_columns = ['Date', 'Closing Balance']
+    required_columns = ['Date', 'Closing Balance', 'Opening Balance', 'Monthly Cash Burn Rate', 'Cash Runway (Months)', 'Assumptions']
     if all(col in df.columns for col in required_columns):
         # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'])
 
-        # Plot trendline for Closing Balance
+        # Plot trendline for Closing Cash Balance
         plot_trendline(df, 'Date', 'Closing Balance')
+
+        # Retrieve cash runway in months from the file
+        cash_runway_months = df['Cash Runway (Months)'].iloc[0]
+
+        # Display cash runway
+        st.subheader("Cash Runway")
+        st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
+
+        # Visualize cash runway
+        visualize_cash_runway(df)
+
+        # Display assumptions
+        display_assumptions(df)
 
         st.success("Cash flow forecast successfully generated!")
     else:
-        st.error(f"CSV file must contain the following columns: {', '.join(required_columns)}.")
+        st.error(f"CSV file must contain 
+        the following columns: {', '.join(required_columns)}.")
