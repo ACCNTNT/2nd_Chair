@@ -67,7 +67,7 @@ def display_assumptions(df):
         st.write("No assumptions found in the uploaded file.")
 
 # Streamlit app layout
-st.title("ACCNTNT's Cash Forecast Visualization")  # Updated title
+st.title("ACCNTNT's Cash Forecast Visualization Tool")  # Updated title
 
 # File uploader
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
@@ -75,6 +75,12 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
+
+    # Visualize cash runway first
+    visualize_cash_runway(df)
+
+    # Display assumptions
+    display_assumptions(df)
 
     # Display the dataframe preview
     st.write("Data Preview:")
@@ -86,9 +92,6 @@ if uploaded_file is not None:
         # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'])
 
-        # Display assumptions first
-        display_assumptions(df)
-
         # Plot trendline for Closing Balance
         plot_trendline(df, 'Date', 'Closing Balance')
 
@@ -98,9 +101,6 @@ if uploaded_file is not None:
         # Display cash runway
         st.subheader("Cash Runway")
         st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
-
-        # Visualize cash runway
-        visualize_cash_runway(df)
 
         st.success("Cash flow forecast successfully generated!")
     else:
