@@ -86,7 +86,7 @@ if uploaded_file is not None:
         # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'])
 
-        # Plot trendline for Closing Cash Balance
+        # Plot trendline for Closing Balance
         plot_trendline(df, 'Date', 'Closing Balance')
 
         # Retrieve cash runway in months from the file
@@ -104,5 +104,4 @@ if uploaded_file is not None:
 
         st.success("Cash flow forecast successfully generated!")
     else:
-        st.error(f"CSV file must contain 
-        the following columns: {', '.join(required_columns)}.")
+        st.error(f"CSV file must contain the following columns: {', '.join(required_columns)}.")
