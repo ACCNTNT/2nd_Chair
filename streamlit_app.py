@@ -85,10 +85,23 @@ if uploaded_file is not None:
     # Retrieve cash runway in months from the file
     cash_runway_months = df['Cash Runway (Months)'].iloc[0]
 
-    # Display cash runway
+    # Calculate average monthly cash burn
+    # Assuming 'Opening Balance' and 'Closing Balance' columns exist and are numerical
+    df['Monthly Cash Burn'] = df['Opening Balance'] - df['Closing Balance']
+    avg_cash_burn = df['Monthly Cash Burn'].mean()
+
+    # Estimate the zero cash date
+    current_balance = df['Closing Balance'].iloc[0]
+    months_to_zero = current_balance / avg_cash_burn if avg_cash_burn != 0 else 0
+    zero_cash_date = pd.to_datetime(df['Date'].iloc[0]) + pd.DateOffset(months=months_to_zero)
+
+    # Display cash runway at the top
     st.subheader("Cash Runway")
     display_date = pd.to_datetime(df['Date'].iloc[1]) if len(df['Date']) > 1 else pd.to_datetime(df['Date'].iloc[0])
     st.write(f"Number of months of cash runway as of {display_date.strftime('%b-%d, %Y')}: {cash_runway_months:.2f} months")
+
+    # Display zero cash date
+    st.write(f"Estimated zero cash date based on average monthly burn rate of ${avg_cash_burn:.2f}: {zero_cash_date.strftime('%b-%d, %Y')}")
 
     # Visualize cash runway first
     visualize_cash_runway(df)
