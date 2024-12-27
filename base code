@@ -39,7 +39,7 @@ def plot_trendline(data, x_col, y_col):
 def visualize_cash_runway(df):
     st.subheader("Cash Runway Visualization")
     
-    # Convert dates to datetime with error handling
+    # Create a new DataFrame for the runway visualization
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
     df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
 
@@ -82,32 +82,14 @@ if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
 
-    # Retrieve cash runway in months from the file
-    cash_runway_months = df['Cash Runway (Months)'].iloc[0]
-
-    # Calculate average monthly cash burn
-    # Assuming 'Opening Balance' and 'Closing Balance' columns exist and are numerical
-    df['Monthly Cash Burn'] = df['Opening Balance'] - df['Closing Balance']
-    avg_cash_burn = df['Monthly Cash Burn'].mean()
-
-    # Estimate the zero cash date
-    current_balance = df['Closing Balance'].iloc[0]
-    months_to_zero = current_balance / avg_cash_burn if avg_cash_burn != 0 else 0
-    zero_cash_date = pd.to_datetime(df['Date'].iloc[0]) + pd.DateOffset(months=months_to_zero)
-
-    # Display cash runway at the top
-    st.subheader("Cash Runway")
-    display_date = pd.to_datetime(df['Date'].iloc[1]) if len(df['Date']) > 1 else pd.to_datetime(df['Date'].iloc[0])
-    st.write(f"Number of months of cash runway as of {display_date.strftime('%b-%d, %Y')}: {cash_runway_months:.2f} months")
-
-    # Display zero cash date
-    st.write(f"Estimated zero cash date based on average monthly burn rate of ${avg_cash_burn:.2f}: {zero_cash_date.strftime('%b-%d, %Y')}")
-
     # Visualize cash runway first
     visualize_cash_runway(df)
 
     # Display assumptions
     display_assumptions(df)
+
+    # Plot trendline for Closing Balance
+    plot_trendline(df, 'Date', 'Closing Balance')
 
     # Display the dataframe preview
     st.write("Data Preview:")
@@ -116,12 +98,16 @@ if uploaded_file is not None:
     # Check for necessary columns
     required_columns = ['Date', 'Closing Balance', 'Opening Balance', 'Monthly Cash Burn Rate', 'Cash Runway (Months)', 'Assumptions']
     if all(col in df.columns for col in required_columns):
-        # Convert Date to datetime with error handling
+        # Convert Date to datetime
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
         df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
 
-        # Plot trendline for Closing Balance
-        plot_trendline(df, 'Date', 'Closing Balance')
+        # Retrieve cash runway in months from the file
+        cash_runway_months = df['Cash Runway (Months)'].iloc[0]
+
+        # Display cash runway
+        st.subheader("Cash Runway")
+        st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
 
         st.success("Cash flow forecast successfully generated!")
     else:
