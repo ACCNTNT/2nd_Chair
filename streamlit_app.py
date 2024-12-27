@@ -11,8 +11,11 @@ def load_data(file):
 
 # Function to create an interactive trendline graph
 def plot_trendline(data, x_col, y_col):
-    # Convert dates to datetime
-    x = pd.to_datetime(data[x_col])
+    # Convert dates to datetime with error handling
+    data[x_col] = pd.to_datetime(data[x_col], errors='coerce')  # Invalid dates become NaT
+    data = data.dropna(subset=[x_col])  # Remove rows with invalid dates
+
+    x = data[x_col]
     y = data[y_col]
 
     # Smooth the curve using spline interpolation
@@ -37,8 +40,11 @@ def visualize_cash_runway(df):
     st.subheader("Cash Runway Visualization")
     
     # Create a new DataFrame for the runway visualization
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
+    df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
+
     runway_data = pd.DataFrame({
-        'Date': pd.to_datetime(df['Date']),
+        'Date': df['Date'],
         'Cash Runway (Months)': df['Cash Runway (Months)']
     })
     
@@ -93,7 +99,8 @@ if uploaded_file is not None:
     required_columns = ['Date', 'Closing Balance', 'Opening Balance', 'Monthly Cash Burn Rate', 'Cash Runway (Months)', 'Assumptions']
     if all(col in df.columns for col in required_columns):
         # Convert Date to datetime
-        df['Date'] = pd.to_datetime(df['Date'])
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
+        df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
 
         # Retrieve cash runway in months from the file
         cash_runway_months = df['Cash Runway (Months)'].iloc[0]
