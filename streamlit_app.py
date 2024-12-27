@@ -95,9 +95,6 @@ if uploaded_file is not None:
     months_to_zero = current_balance / avg_cash_burn if avg_cash_burn != 0 else 0
     zero_cash_date = pd.to_datetime(df['Date'].iloc[0]) + pd.DateOffset(months=months_to_zero)
 
-    # Visualize cash runway first
-    visualize_cash_runway(df)
-
     # Display cash runway at the top
     st.subheader("Cash Runway")
     display_date = pd.to_datetime(df['Date'].iloc[1]) if len(df['Date']) > 1 else pd.to_datetime(df['Date'].iloc[0])
@@ -105,6 +102,9 @@ if uploaded_file is not None:
 
     # Display zero cash date
     st.write(f"Estimated zero cash date based on average monthly burn rate of ${avg_cash_burn:.2f}: {zero_cash_date.strftime('%b-%d, %Y')}")
+
+    # Visualize cash runway first
+    visualize_cash_runway(df)
 
     # Display assumptions
     display_assumptions(df)
