@@ -39,7 +39,7 @@ def plot_trendline(data, x_col, y_col):
 def visualize_cash_runway(df):
     st.subheader("Cash Runway Visualization")
     
-    # Create a new DataFrame for the runway visualization
+    # Convert dates to datetime with error handling
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
     df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
 
@@ -82,14 +82,19 @@ if uploaded_file is not None:
     # Load data from CSV
     df = load_data(uploaded_file)
 
+    # Retrieve cash runway in months from the file
+    cash_runway_months = df['Cash Runway (Months)'].iloc[0]
+
+    # Display cash runway
+    st.subheader("Cash Runway")
+    display_date = pd.to_datetime(df['Date'].iloc[1]) if len(df['Date']) > 1 else pd.to_datetime(df['Date'].iloc[0])
+    st.write(f"Number of months of cash runway as of {display_date.strftime('%b-%d, %Y')}: {cash_runway_months:.2f} months")
+
     # Visualize cash runway first
     visualize_cash_runway(df)
 
     # Display assumptions
     display_assumptions(df)
-
-    # Plot trendline for Closing Balance
-    plot_trendline(df, 'Date', 'Closing Balance')
 
     # Display the dataframe preview
     st.write("Data Preview:")
@@ -98,16 +103,12 @@ if uploaded_file is not None:
     # Check for necessary columns
     required_columns = ['Date', 'Closing Balance', 'Opening Balance', 'Monthly Cash Burn Rate', 'Cash Runway (Months)', 'Assumptions']
     if all(col in df.columns for col in required_columns):
-        # Convert Date to datetime
+        # Convert Date to datetime with error handling
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')  # Invalid dates become NaT
         df = df.dropna(subset=['Date'])  # Remove rows with invalid dates
 
-        # Retrieve cash runway in months from the file
-        cash_runway_months = df['Cash Runway (Months)'].iloc[0]
-
-        # Display cash runway
-        st.subheader("Cash Runway")
-        st.write(f"Number of months of cash runway: {cash_runway_months:.2f} months")
+        # Plot trendline for Closing Balance
+        plot_trendline(df, 'Date', 'Closing Balance')
 
         st.success("Cash flow forecast successfully generated!")
     else:
